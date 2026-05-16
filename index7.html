@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energy Sword Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#050816;
+cursor:none;
+}
+
+/* Cursor core */
+
+.cursor{
+position:fixed;
+width:10px;
+height:10px;
+border-radius:50%;
+background:white;
+pointer-events:none;
+z-index:9999;
+
+box-shadow:
+0 0 10px cyan,
+0 0 20px cyan,
+0 0 40px cyan;
+
+transform:translate(-50%,-50%);
+}
+
+
+/* Trail particles */
+
+.trail{
+
+position:fixed;
+
+border-radius:50%;
+
+pointer-events:none;
+
+z-index:9998;
+
+will-change:
+transform,
+opacity;
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const cursor=
+document.querySelector(".cursor");
+
+const TRAIL_COUNT=25;
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let trail=[];
+
+
+/* Create trail particles */
+
+for(let i=0;i<TRAIL_COUNT;i++){
+
+let div=
+document.createElement("div");
+
+div.className="trail";
+
+document.body.appendChild(div);
+
+trail.push({
+
+el:div,
+
+x:mouse.x,
+y:mouse.y
+
+});
+
+}
+
+
+/* Mouse */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+}
+);
+
+
+/* Animate */
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+
+/* First particle */
+
+trail[0].x +=
+(mouse.x-trail[0].x)
+*0.35;
+
+trail[0].y +=
+(mouse.y-trail[0].y)
+*0.35;
+
+
+/* Remaining trail */
+
+for(let i=1;i<TRAIL_COUNT;i++){
+
+trail[i].x +=
+(trail[i-1].x-trail[i].x)
+*0.30;
+
+trail[i].y +=
+(trail[i-1].y-trail[i].y)
+*0.30;
+
+}
+
+
+/* Render */
+
+trail.forEach(
+(item,index)=>{
+
+let size=
+40-
+(index*1.4);
+
+if(size<4)
+size=4;
+
+
+let opacity=
+1-
+(index/TRAIL_COUNT);
+
+
+let hue=
+180+
+(index*4);
+
+
+item.el.style.width=
+size+"px";
+
+item.el.style.height=
+size+"px";
+
+item.el.style.opacity=
+opacity;
+
+
+item.el.style.background=
+`hsla(
+${hue},
+100%,
+60%,
+${opacity}
+)`;
+
+
+item.el.style.boxShadow=
+`
+0 0 8px hsla(${hue},100%,60%,1),
+0 0 20px hsla(${hue},100%,60%,1),
+0 0 40px hsla(${hue},100%,60%,1)
+`;
+
+
+item.el.style.transform=
+`
+translate(
+${item.x}px,
+${item.y}px
+)
+translate(-50%,-50%)
+`;
+
+});
+
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

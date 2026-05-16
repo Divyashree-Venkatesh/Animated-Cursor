@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#0f172a;
+cursor:none;
+position:relative;
+}
+
+/* Cursor dot */
+
+.cursor{
+position:fixed;
+width:10px;
+height:10px;
+border-radius:50%;
+background:white;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9999;
+}
+
+/* Bubble */
+
+.bubble{
+position:fixed;
+border:2px solid rgba(255,255,255,0.8);
+border-radius:50%;
+pointer-events:none;
+z-index:9998;
+will-change:transform, opacity;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const cursor =
+document.querySelector(".cursor");
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let bubbles=[];
+
+
+/* Mouse movement */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+
+/* Create bubble occasionally */
+
+if(Math.random()>0.6){
+
+createBubble();
+
+}
+
+});
+
+
+function createBubble(){
+
+let bubble=
+document.createElement("div");
+
+bubble.className="bubble";
+
+let size=
+Math.random()*20+10;
+
+document.body.appendChild(
+bubble
+);
+
+bubble.style.width=
+size+"px";
+
+bubble.style.height=
+size+"px";
+
+
+bubbles.push({
+
+el:bubble,
+
+x:mouse.x,
+y:mouse.y,
+
+size:size,
+
+vx:
+(Math.random()-0.5)*2,
+
+vy:
+-(Math.random()*2+1),
+
+life:1
+
+});
+
+}
+
+
+/* Animate */
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+
+for(let i=bubbles.length-1;i>=0;i--){
+
+let b=bubbles[i];
+
+b.x+=b.vx;
+
+b.y+=b.vy;
+
+b.size+=0.15;
+
+b.life-=0.015;
+
+
+b.el.style.width=
+b.size+"px";
+
+b.el.style.height=
+b.size+"px";
+
+
+b.el.style.opacity=
+b.life;
+
+
+b.el.style.transform=
+`
+translate(
+${b.x}px,
+${b.y}px
+)
+translate(-50%,-50%)
+`;
+
+
+/* Remove faded bubbles */
+
+if(b.life<=0){
+
+b.el.remove();
+
+bubbles.splice(i,1);
+
+}
+
+}
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

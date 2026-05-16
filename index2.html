@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smooth Animal Tail</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#111;
+overflow:hidden;
+height:100vh;
+cursor:none;
+}
+
+/* Cursor dot */
+.cursor{
+position:fixed;
+width:12px;
+height:12px;
+border-radius:50%;
+background:white;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9999;
+}
+
+/* Background animals */
+.animal{
+position:absolute;
+font-size:28px;
+pointer-events:none;
+user-select:none;
+}
+
+/* Tail */
+.tail{
+position:fixed;
+pointer-events:none;
+user-select:none;
+transform:translate(-50%,-50%);
+z-index:9998;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const emojis=[
+"🐱","🐶","🐰","🦊",
+"🐼","🐯","🐻",
+"🐸","🐨","🦁","🐵"
+];
+
+const TOTAL_ANIMALS=25;
+const MAX_TAIL=20;
+
+const cursor=document.querySelector(".cursor");
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let animals=[];
+let tail=[];
+
+
+/* Create animal */
+function createAnimal(){
+
+let el=document.createElement("div");
+
+el.className="animal";
+
+el.innerHTML=
+emojis[Math.floor(
+Math.random()*emojis.length
+)];
+
+let x=Math.random()*window.innerWidth;
+let y=Math.random()*window.innerHeight;
+
+el.style.transform=
+`translate(${x}px,${y}px)`;
+
+document.body.appendChild(el);
+
+return{
+el,
+x,
+y
+};
+
+}
+
+
+/* Initial animals */
+
+for(let i=0;i<TOTAL_ANIMALS;i++){
+
+animals.push(
+createAnimal()
+);
+
+}
+
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+}
+);
+
+
+/* Dynamic sizing */
+
+function updateSizes(){
+
+const max=40;
+const min=14;
+
+tail.forEach((item,index)=>{
+
+let size=max;
+
+if(tail.length>1){
+
+size=
+max-
+(index*
+((max-min)/
+(tail.length-1)));
+
+}
+
+item.el.style.fontSize=
+size+"px";
+
+});
+
+}
+
+
+/* Add tail */
+
+function addTail(emoji){
+
+if(tail.length>=MAX_TAIL){
+
+tail[tail.length-1]
+.el.remove();
+
+tail.pop();
+
+}
+
+let div=
+document.createElement("div");
+
+div.className="tail";
+
+div.innerHTML=emoji;
+
+document.body.appendChild(div);
+
+tail.push({
+
+el:div,
+x:mouse.x,
+y:mouse.y
+
+});
+
+updateSizes();
+
+}
+
+
+/* Collision */
+
+function checkCollision(){
+
+animals.forEach((animal,index)=>{
+
+let dx=
+mouse.x-animal.x;
+
+let dy=
+mouse.y-animal.y;
+
+let dist=
+Math.sqrt(
+dx*dx+dy*dy
+);
+
+if(dist<25){
+
+let emoji=
+animal.el.innerHTML;
+
+animal.el.remove();
+
+animals[index]=
+createAnimal();
+
+addTail(
+emoji
+);
+
+}
+
+});
+
+}
+
+
+/* Tail animation */
+
+function animateTail(){
+
+if(!tail.length)
+return;
+
+
+/* faster + smooth */
+
+tail[0].x +=
+(mouse.x-tail[0].x)
+*0.25;
+
+tail[0].y +=
+(mouse.y-tail[0].y)
+*0.25;
+
+
+for(let i=1;i<tail.length;i++){
+
+tail[i].x +=
+(tail[i-1].x-tail[i].x)
+*0.23;
+
+tail[i].y +=
+(tail[i-1].y-tail[i].y)
+*0.23;
+
+}
+
+
+tail.forEach(item=>{
+
+item.el.style.transform=
+`translate(${item.x}px,${item.y}px)`;
+
+});
+
+}
+
+
+/* Main loop */
+
+function animate(){
+
+cursor.style.transform=
+`translate(${mouse.x}px,${mouse.y}px)`;
+
+
+checkCollision();
+
+animateTail();
+
+requestAnimationFrame(
+animate
+);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coin Pickup Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#101622;
+cursor:none;
+font-family:Arial,sans-serif;
+}
+
+/* Cursor */
+
+.cursor{
+position:fixed;
+width:12px;
+height:12px;
+border-radius:50%;
+background:white;
+transform:translate(-50%,-50%);
+pointer-events:none;
+z-index:9999;
+}
+
+/* Score */
+
+.score{
+position:fixed;
+top:20px;
+left:20px;
+color:white;
+font-size:24px;
+font-weight:bold;
+z-index:9999;
+}
+
+/* Coins */
+
+.coin{
+position:absolute;
+font-size:30px;
+pointer-events:none;
+user-select:none;
+will-change:transform;
+}
+
+/* Pickup effect */
+
+.pop{
+position:fixed;
+font-size:18px;
+color:gold;
+pointer-events:none;
+transform:translate(-50%,-50%);
+animation:rise .6s forwards;
+}
+
+@keyframes rise{
+
+0%{
+opacity:1;
+transform:
+translate(-50%,-50%);
+}
+
+100%{
+opacity:0;
+transform:
+translate(-50%,-90px);
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+<div class="score">Coins: 0</div>
+
+<script>
+
+const cursor=
+document.querySelector(".cursor");
+
+const scoreText=
+document.querySelector(".score");
+
+const TOTAL_COINS=25;
+
+let coins=[];
+let score=0;
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+
+/* Create coin */
+
+function createCoin(){
+
+let div=
+document.createElement("div");
+
+div.className="coin";
+
+div.innerHTML="🪙";
+
+let x=
+Math.random()*
+(window.innerWidth-50);
+
+let y=
+Math.random()*
+(window.innerHeight-50);
+
+document.body.appendChild(div);
+
+return{
+
+el:div,
+x:x,
+y:y,
+collecting:false
+
+};
+
+}
+
+
+/* Initial coins */
+
+for(let i=0;i<TOTAL_COINS;i++){
+
+coins.push(
+createCoin()
+);
+
+}
+
+
+/* Mouse */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+}
+);
+
+
+/* Pickup animation */
+
+function createPop(x,y){
+
+let pop=
+document.createElement("div");
+
+pop.className="pop";
+
+pop.innerHTML="+1";
+
+pop.style.left=
+x+"px";
+
+pop.style.top=
+y+"px";
+
+document.body.appendChild(pop);
+
+setTimeout(()=>{
+
+pop.remove();
+
+},600);
+
+}
+
+
+/* Main animation */
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+
+coins.forEach((coin,index)=>{
+
+let dx=
+mouse.x-coin.x;
+
+let dy=
+mouse.y-coin.y;
+
+let distance=
+Math.sqrt(
+dx*dx+
+dy*dy
+);
+
+
+/* Start attraction */
+
+if(distance<120){
+
+coin.collecting=true;
+
+}
+
+
+/* Fly to cursor */
+
+if(coin.collecting){
+
+coin.x +=
+dx*0.18;
+
+coin.y +=
+dy*0.18;
+
+}
+
+
+/* Collected */
+
+if(distance<15){
+
+coin.el.remove();
+
+createPop(
+coin.x,
+coin.y
+);
+
+score++;
+
+scoreText.innerHTML=
+`Coins: ${score}`;
+
+
+coins[index]=
+createCoin();
+
+return;
+
+}
+
+
+/* Render */
+
+coin.el.style.transform=
+`translate(
+${coin.x}px,
+${coin.y}px
+)`;
+
+});
+
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

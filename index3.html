@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butterfly Swarm Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#111;
+cursor:none;
+}
+
+/* Cursor dot */
+.cursor{
+position:fixed;
+width:10px;
+height:10px;
+background:white;
+border-radius:50%;
+pointer-events:none;
+z-index:9999;
+transform:translate(-50%,-50%);
+}
+
+/* Butterflies */
+
+.butterfly{
+position:fixed;
+pointer-events:none;
+font-size:24px;
+user-select:none;
+transform:translate(-50%,-50%);
+z-index:9998;
+will-change:transform;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const cursor=
+document.querySelector(".cursor");
+
+const butterflyCount=12;
+
+const butterflies=[];
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+
+/* Create butterflies */
+
+for(let i=0;i<butterflyCount;i++){
+
+let div=
+document.createElement("div");
+
+div.className="butterfly";
+
+div.innerHTML="🦋";
+
+document.body.appendChild(div);
+
+butterflies.push({
+
+el:div,
+x:mouse.x,
+y:mouse.y,
+offsetX:(Math.random()-0.5)*50,
+offsetY:(Math.random()-0.5)*50,
+flap:Math.random()*6
+
+});
+
+}
+
+
+/* Mouse */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+});
+
+
+function animate(){
+
+cursor.style.transform=
+`translate(${mouse.x}px,${mouse.y}px)`;
+
+
+/* First butterfly follows faster */
+
+butterflies[0].x +=
+(mouse.x+butterflies[0].offsetX-
+butterflies[0].x)
+*0.22;
+
+butterflies[0].y +=
+(mouse.y+butterflies[0].offsetY-
+butterflies[0].y)
+*0.22;
+
+
+/* Remaining butterflies follow previous */
+
+for(let i=1;i<butterflies.length;i++){
+
+butterflies[i].x +=
+(
+butterflies[i-1].x+
+butterflies[i].offsetX-
+butterflies[i].x
+)
+*0.18;
+
+butterflies[i].y +=
+(
+butterflies[i-1].y+
+butterflies[i].offsetY-
+butterflies[i].y
+)
+*0.18;
+
+}
+
+
+/* Render */
+
+butterflies.forEach((b,index)=>{
+
+b.flap+=0.15;
+
+let wingScale=
+1+
+Math.sin(
+b.flap
+)*0.2;
+
+
+let rotate=
+Math.sin(
+b.flap
+)*15;
+
+let size=
+28-(index*1.2);
+
+
+b.el.style.fontSize=
+size+"px";
+
+
+b.el.style.transform=
+`
+translate(
+${b.x}px,
+${b.y}px
+)
+scale(${wingScale})
+rotate(${rotate}deg)
+`;
+
+});
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

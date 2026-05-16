@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smoke Trail Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#111;
+cursor:none;
+}
+
+/* Cursor dot */
+
+.cursor{
+position:fixed;
+width:10px;
+height:10px;
+background:white;
+border-radius:50%;
+pointer-events:none;
+z-index:9999;
+transform:translate(-50%,-50%);
+}
+
+/* Smoke particle */
+
+.smoke{
+
+position:fixed;
+
+border-radius:50%;
+
+background:
+radial-gradient(
+circle,
+rgba(255,255,255,.7),
+rgba(255,255,255,.2),
+transparent
+);
+
+pointer-events:none;
+
+z-index:9998;
+
+will-change:
+transform,
+opacity;
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const cursor=
+document.querySelector(".cursor");
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let smoke=[];
+
+
+/* Mouse movement */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+/* Create smoke occasionally */
+
+if(Math.random()>0.4){
+
+createSmoke();
+
+}
+
+});
+
+
+function createSmoke(){
+
+let div=
+document.createElement("div");
+
+div.className=
+"smoke";
+
+document.body.appendChild(div);
+
+let size=
+Math.random()*20+15;
+
+smoke.push({
+
+el:div,
+
+x:mouse.x,
+y:mouse.y,
+
+vx:
+(Math.random()-0.5)*1.5,
+
+vy:
+(Math.random()-0.5)*1.5,
+
+size:size,
+
+life:1
+
+});
+
+}
+
+
+/* Animation */
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+
+for(
+let i=smoke.length-1;
+i>=0;
+i--
+){
+
+let s=
+smoke[i];
+
+
+/* Drift */
+
+s.x +=
+s.vx;
+
+s.y +=
+s.vy-0.3;
+
+
+/* Expand */
+
+s.size +=
+0.4;
+
+
+/* Fade */
+
+s.life -=
+0.015;
+
+
+s.el.style.width=
+s.size+"px";
+
+s.el.style.height=
+s.size+"px";
+
+s.el.style.opacity=
+s.life;
+
+
+s.el.style.transform=
+`
+translate(
+${s.x}px,
+${s.y}px
+)
+translate(-50%,-50%)
+`;
+
+
+/* Remove */
+
+if(
+s.life<=0
+){
+
+s.el.remove();
+
+smoke.splice(
+i,
+1
+);
+
+}
+
+}
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

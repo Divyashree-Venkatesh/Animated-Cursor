@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Cursor Trail</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#111;
+cursor:none;
+}
+
+/* Dot after stop */
+.cursor-dot{
+position:fixed;
+width:36px;
+height:36px;
+background:white;
+border-radius:50%;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9999;
+opacity:1;
+transition:opacity .4s ease;
+}
+
+/* Animal trail */
+.trail{
+position:fixed;
+pointer-events:none;
+transform:translate(-50%,-50%);
+user-select:none;
+z-index:9998;
+opacity:1;
+transition:opacity .5s ease;
+will-change:transform;
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor-dot"></div>
+
+<script>
+
+const animals=[
+"🐱",
+"🐶",
+"🐰",
+"🦊",
+"🐼",
+"🐯",
+"🐻",
+"🐸"
+];
+
+const trailCount=12;
+const trails=[];
+
+const dot=document.querySelector(".cursor-dot");
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let moving=false;
+let stopTimer;
+
+
+// Create animals
+for(let i=0;i<trailCount;i++){
+
+let div=document.createElement("div");
+
+div.className="trail";
+
+div.innerHTML=animals[
+Math.floor(Math.random()*animals.length)
+];
+
+let size=36-(i*2);
+
+if(size<14){
+size=14;
+}
+
+div.style.fontSize=size+"px";
+
+document.body.appendChild(div);
+
+trails.push({
+element:div,
+x:mouse.x,
+y:mouse.y
+});
+
+}
+
+
+document.addEventListener("mousemove",(e)=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+moving=true;
+
+dot.style.opacity=0;
+
+
+// Show animals again
+trails.forEach(item=>{
+item.element.style.opacity=1;
+});
+
+clearTimeout(stopTimer);
+
+stopTimer=setTimeout(()=>{
+moving=false;
+},400);
+
+});
+
+
+function animate(){
+
+// Slow movement
+trails[0].x +=
+(mouse.x-trails[0].x)*0.10;
+
+trails[0].y +=
+(mouse.y-trails[0].y)*0.10;
+
+
+// Following effect
+for(let i=1;i<trails.length;i++){
+
+trails[i].x +=
+(trails[i-1].x-trails[i].x)*0.10;
+
+trails[i].y +=
+(trails[i-1].y-trails[i].y)*0.10;
+
+}
+
+
+// Update positions
+trails.forEach((trail)=>{
+
+trail.element.style.left=
+trail.x+"px";
+
+trail.element.style.top=
+trail.y+"px";
+
+});
+
+
+// When stopped
+if(!moving){
+
+dot.style.left=
+trails[0].x+"px";
+
+dot.style.top=
+trails[0].y+"px";
+
+dot.style.opacity=1;
+
+
+// Hide all animals
+trails.forEach(item=>{
+item.element.style.opacity=0;
+});
+
+}
+else{
+
+dot.style.opacity=0;
+
+}
+
+requestAnimationFrame(animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>

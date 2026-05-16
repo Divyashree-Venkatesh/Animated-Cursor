@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XP Collector Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#0b1020;
+height:100vh;
+overflow:hidden;
+cursor:none;
+font-family:Arial,sans-serif;
+}
+
+/* Cursor dot */
+.cursor{
+position:fixed;
+width:12px;
+height:12px;
+background:white;
+border-radius:50%;
+transform:translate(-50%,-50%);
+pointer-events:none;
+z-index:9999;
+}
+
+/* XP Display */
+.score{
+position:fixed;
+top:20px;
+left:20px;
+font-size:24px;
+color:white;
+font-weight:bold;
+z-index:9999;
+}
+
+/* Background stars */
+.star{
+position:absolute;
+font-size:28px;
+pointer-events:none;
+user-select:none;
+}
+
+/* Trail stars */
+.tail{
+position:fixed;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9998;
+transition:font-size .3s ease;
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor"></div>
+<div class="score">XP: 0</div>
+
+<script>
+
+const cursor=document.querySelector(".cursor");
+const scoreText=document.querySelector(".score");
+
+const TOTAL_STARS=25;
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let stars=[];
+let trail=[];
+
+let xp=0;
+
+
+/* Create star */
+
+function createStar(){
+
+let el=document.createElement("div");
+
+el.className="star";
+
+el.innerHTML="⭐";
+
+let x=
+Math.random()*
+(window.innerWidth-50);
+
+let y=
+Math.random()*
+(window.innerHeight-50);
+
+el.style.transform=
+`translate(${x}px,${y}px)`;
+
+document.body.appendChild(el);
+
+return{
+el,
+x,
+y
+};
+
+}
+
+
+/* Initial stars */
+
+for(let i=0;i<TOTAL_STARS;i++){
+
+stars.push(
+createStar()
+);
+
+}
+
+
+/* Mouse */
+
+document.addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+}
+);
+
+
+/* Update sizes */
+
+function updateTrailSizes(){
+
+const max=40;
+const min=14;
+
+trail.forEach((item,index)=>{
+
+let size=max;
+
+if(trail.length>1){
+
+size=
+max-
+(index*
+((max-min)/
+(trail.length-1)));
+
+}
+
+item.el.style.fontSize=
+size+"px";
+
+});
+
+}
+
+
+/* Add collected star */
+
+function addToTrail(){
+
+let div=
+document.createElement("div");
+
+div.className="tail";
+
+div.innerHTML="⭐";
+
+document.body.appendChild(div);
+
+trail.push({
+
+el:div,
+x:mouse.x,
+y:mouse.y
+
+});
+
+updateTrailSizes();
+
+}
+
+
+/* Collision */
+
+function detectCollision(){
+
+stars.forEach((star,index)=>{
+
+let dx=
+mouse.x-star.x;
+
+let dy=
+mouse.y-star.y;
+
+let distance=
+Math.sqrt(
+dx*dx+
+dy*dy
+);
+
+if(distance<25){
+
+star.el.remove();
+
+stars[index]=
+createStar();
+
+xp+=10;
+
+scoreText.innerHTML=
+`XP: ${xp}`;
+
+addToTrail();
+
+}
+
+});
+
+}
+
+
+/* Animate trail */
+
+function animateTrail(){
+
+if(!trail.length)
+return;
+
+
+trail[0].x +=
+(mouse.x-trail[0].x)
+*0.22;
+
+trail[0].y +=
+(mouse.y-trail[0].y)
+*0.22;
+
+
+for(let i=1;i<trail.length;i++){
+
+trail[i].x +=
+(trail[i-1].x-trail[i].x)
+*0.20;
+
+trail[i].y +=
+(trail[i-1].y-trail[i].y)
+*0.20;
+
+}
+
+
+trail.forEach(item=>{
+
+item.el.style.left=
+item.x+"px";
+
+item.el.style.top=
+item.y+"px";
+
+});
+
+}
+
+
+/* Main animation */
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+detectCollision();
+
+animateTrail();
+
+requestAnimationFrame(
+animate);
+
+}
+
+animate();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Animal Collector Cursor</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#111;
+overflow:hidden;
+height:100vh;
+cursor:none;
+position:relative;
+}
+
+/* Cursor dot */
+.cursor{
+position:fixed;
+width:12px;
+height:12px;
+background:white;
+border-radius:50%;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9999;
+}
+
+/* Background animals */
+.animal{
+position:absolute;
+font-size:28px;
+user-select:none;
+pointer-events:none;
+transition:
+transform .4s ease,
+opacity .5s ease;
+}
+
+/* Collected trail animals */
+.follower{
+position:fixed;
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:9998;
+font-size:40px;
+transition:transform .1s linear;
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor"></div>
+
+<script>
+
+const animals=[
+"🐱","🐶","🐰","🦊",
+"🐼","🐻","🐯","🐸",
+"🐵","🐨","🦁"
+];
+
+const TOTAL_ANIMALS=30;
+
+const cursor=document.querySelector(".cursor");
+
+let mouse={
+x:window.innerWidth/2,
+y:window.innerHeight/2
+};
+
+let followers=[];
+
+
+// Create random background animals
+function createAnimal(){
+
+let div=document.createElement("div");
+
+div.className="animal";
+
+div.innerHTML=
+animals[Math.floor(
+Math.random()*animals.length
+)];
+
+div.style.left=
+Math.random()*
+(window.innerWidth-50)+"px";
+
+div.style.top=
+Math.random()*
+(window.innerHeight-50)+"px";
+
+document.body.appendChild(div);
+
+return div;
+
+}
+
+for(let i=0;i<TOTAL_ANIMALS;i++){
+
+createAnimal();
+
+}
+
+
+document.addEventListener(
+"mousemove",
+(e)=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+}
+);
+
+
+// create trail follower
+function createFollower(emoji){
+
+let div=document.createElement("div");
+
+div.className="follower";
+
+div.innerHTML=emoji;
+
+document.body.appendChild(div);
+
+followers.push({
+el:div,
+x:mouse.x,
+y:mouse.y
+});
+
+}
+
+
+// collision detection
+function detectCollision(){
+
+const allAnimals=
+document.querySelectorAll(".animal");
+
+allAnimals.forEach(animal=>{
+
+let rect=
+animal.getBoundingClientRect();
+
+let centerX=
+rect.left+rect.width/2;
+
+let centerY=
+rect.top+rect.height/2;
+
+let dx=
+mouse.x-centerX;
+
+let dy=
+mouse.y-centerY;
+
+let distance=
+Math.sqrt(dx*dx+dy*dy);
+
+if(distance<25){
+
+animal.style.transform=
+"scale(2)";
+
+let emoji=
+animal.innerHTML;
+
+animal.remove();
+
+createFollower(emoji);
+
+createAnimal();
+
+}
+
+});
+
+}
+
+
+// animate trail
+function updateFollowers(){
+
+if(followers.length===0) return;
+
+followers[0].x +=
+(mouse.x-followers[0].x)*0.12;
+
+followers[0].y +=
+(mouse.y-followers[0].y)*0.12;
+
+
+for(let i=1;i<followers.length;i++){
+
+followers[i].x +=
+(followers[i-1].x-followers[i].x)
+*0.12;
+
+followers[i].y +=
+(followers[i-1].y-followers[i].y)
+*0.12;
+
+}
+
+followers.forEach(f=>{
+
+f.el.style.left=
+f.x+"px";
+
+f.el.style.top=
+f.y+"px";
+
+});
+
+}
+
+
+function animate(){
+
+cursor.style.left=
+mouse.x+"px";
+
+cursor.style.top=
+mouse.y+"px";
+
+detectCollision();
+
+updateFollowers();
+
+requestAnimationFrame(
+animate
+);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
