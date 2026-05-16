@@ -1,4 +1,4 @@
-# Animated Cursor Collection
+## Animated Cursor Collection
 
 A collection of creative and interactive animated cursor effects built using **HTML, CSS, and JavaScript**.
 
